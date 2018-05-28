@@ -1,0 +1,6 @@
+#! /bin/bash
+
+source /opt/wordpress_scripts/config/script.conf
+
+mysql --user=$admin_mysql --password=$mysql_passwd -e "DROP DATABASE $1"
+mysql --user=$admin_mysql --password=$mysql_passwd -e "CREATE DATABASE $1" 

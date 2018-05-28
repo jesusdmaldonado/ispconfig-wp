@@ -1,0 +1,5 @@
+#! /bin/bash
+
+source /opt/wordpress_scripts/config/script.conf
+
+mysql --user=$admin_mysql --password=$mysql_passwd $1 < /var/www/$2/web/$3

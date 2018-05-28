@@ -1,0 +1,73 @@
+############ Wordpress Theme Script#############
+# Version: 2
+# Author: Jesús Maldonado
+#! /bin/bash
+shopt -s extglob
+if [ "$#" -lt "4" ]; then
+	echo "ERROR: Less params than expected."
+	echo "Script usage:"
+	echo "wordpress-theme [live-domain] [staging-domain] [theme-folder-name] [to-live | to-staging]"
+	exit 1
+elif [ "$#" -gt "4" ]; then
+	echo "ERROR: More params than expected."
+	echo "Script usage:"
+	echo "wordpress-theme [live-domain] [staging-domain] [theme-folder-name] [to-live | to-staging]"
+	exit 1
+fi
+echo "********Theme WordPress Script********"
+if [ "$4" = "to-staging" ]; then
+	origin_domain=$1
+	final_domain=$2
+	echo "Passing from Live to Staging Environment."
+elif [ "$4" = "to-live" ]; then
+	origin_domain=$2
+	final_domain=$1
+	echo "Passing from Staging to Live Environment."
+else
+	echo "ERROR: Last param is wrong."
+	echo "Script usage"
+	echo "wordpress-theme [live-domain] [staging-domain] [theme-folder-name] [to-live | to-staging]"
+	exit 1
+fi
+
+theme_folder=$3
+origin_path=/var/www/$origin_domain/web/wp-content/themes
+final_path=/var/www/$final_domain/web/wp-content/themes
+exec_time=$(date "+%d%m%Y-%H%M%S")
+
+# Making theme backups
+
+cd $origin_path
+tar cfz /usr/backups/themes/$origin_domain-$theme_folder-$exec_time.tar $theme_folder -x *.git*
+cd $final_path
+tar cfz /usr/backups/themes/$final_domain-$theme_folder-$exec_time.tar $theme_folder -x *.git*
+
+echo "Create zip ................... OK"
+
+# Drop files in destination directory
+
+rm -rf $final_path/$theme_folder
+
+echo "Clean destination directory ...................... OK"
+
+# Copying from origin folder
+
+cp /usr/backups/themes/$origin_domain-$theme_folder-$exec_time.tar $final_path
+
+echo "Copy zip to destination directory ....................... OK"
+
+# Unziping origin file
+
+tar xfz $origin_domain-$theme_folder-$exec_time.tar
+rm $origin_domain-*
+
+echo "Unzip and move files to destination directory .......................... OK"
+
+owner_user=$(stat -c %U /var/www/$final_domain/web/)
+owner_group=$(stat -c %G /var/www/$final_domain/web/)
+
+# Changing owner
+
+chown -R $owner_user.$owner_group $final_path/$theme_folder
+
+echo "Change owner ....................... OK"

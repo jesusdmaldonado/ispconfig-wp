@@ -1,0 +1,12 @@
+#! /bin/bash
+
+source /opt/wordpress_scripts/config/script.conf
+
+final_db=$1
+old_url=https://$2
+new_url=https://$3
+
+mysql --user=$admin_mysql --password=$mysql_passwd $final_db -e "UPDATE wp_options SET option_value = REPLACE(option_value,'$old_url','$new_url');"
+mysql --user=$admin_mysql --password=$mysql_passwd $final_db -e "UPDATE wp_posts SET post_content =REPLACE(post_content,'$old_url','$new_url');"
+mysql --user=$admin_mysql --password=$mysql_passwd $final_db -e "UPDATE wp_posts SET guid = REPLACE(guid,'$old_url','$new_url');"
+mysql --user=$admin_mysql --password=$mysql_passwd $final_db -e "UPDATE wp_postmeta SET meta_value = REPLACE(meta_value,'$old_url','$new_url');"

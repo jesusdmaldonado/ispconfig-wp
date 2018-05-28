@@ -1,0 +1,74 @@
+#! /bin/bash
+
+############ Wordpress Backup Script #############
+# Version: 3.1
+# Author: Jesús Maldonado
+
+source /opt/wordpress_scripts/config/script.conf
+
+if [ "$#" -lt "2" ]; then
+	echo "ERROR: Less params than expected."
+	echo "Script usage"
+	echo "wordpress-backup [domain] [backup|restore] | [file_name]"
+	exit 1
+elif [ "$#" -gt "3" ]; then
+	echo "ERROR: More params than expected."
+	echo "Script usage:"
+	echo "wordpress-backup [domain] [backup|restore] | [file_name]"
+	exit 1
+fi
+echo "********WordPress Backup Script********"
+
+exec_time=$(date "+%d%m%Y-%H%M%S")
+origin_db=$(/opt/wordpress_scripts/mysql/db_name $1)
+
+if [ "$2" = "backup" ]; then
+	# Making DB backups
+	/opt/wordpress_scripts/mysql/db_backup $origin_db $1 $1-$exec_time.sql
+	
+	# Making zip file of origin site
+	cd /var/www/$1/web/
+	tar cfz /usr/backups/sites/$1-$exec_time.tar *
+	rm -f $1-$exec_time.sql
+
+	echo "Create backup file ................... OK"
+	echo "Backup complete"
+	#echo "$1-$exec_time.tar"
+elif [ "$2" = "restore" ]; then
+
+	owner_user=$(stat -c %U /var/www/$1/web/)
+	owner_group=$(stat -c %G /var/www/$1/web/)
+	file="/usr/backups/sites/$3"
+	db_backup=$(echo $3 | sed -e 's/\.tar/.sql/g')
+	if [ -f "$file" ]; then
+		echo "$file found."
+		rm -Rf /var/www/$1/web/*
+		cp $3 /var/www/$1/web/
+		cd /var/www/$1/web/
+		tar xfz $3
+		chown -R $owner_user.$owner_group /var/www/$1/web/
+		echo "$3 files restored............................. Ok"
+		
+		# Drop and create database before restoration
+		/opt/wordpress_scripts/mysql/db_clean $origin_db
+		
+		# Restore backup
+		/opt/wordpress_scripts/mysql/db_restore $origin_db $1 $db_backup
+		rm $db_backup $3
+		echo "$db_backup restored............................ Ok"
+	else
+		echo "$file not found."
+		exit 1
+	fi
+else
+	echo "ERROR: Must be 'backup' or 'restore'."
+	echo "Script usage:"
+	echo "wordpress-backup [domain] [backup|restore] | [file_name]"
+	exit 1
+fi
+
+
+
+
+
+

@@ -1,0 +1,36 @@
+#!/bin/bash
+
+############ Wordpress S3 Backup Script #############
+# Version: 1.2
+# Author: Jesús Maldonado
+
+# Amazon S3 bucket
+bucket="isp-citriom"
+
+if [ $bucket = " " ]; then
+	echo "Configure your bucket before run s3 backups."
+	exit 1
+fi
+
+stamp=$(date "+%d%m%Y")
+/opt/wordpress_scripts/mysql/db_list
+
+domains=/opt/wordpress_scripts/config/.list
+
+cd /opt/wordpress_scripts/config/
+
+while IFS='' read -r site || [[ -n "$site" ]]; do
+    /opt/wordpress_scripts/wordpress-backup $site "backup"
+	#backup=${result##*complete}
+	
+	# Send to S3 Bucket
+	s3cmd put /usr/backups/sites/$site-$stamp* s3://$bucket/$site-$stamp.tar
+	echo "$site backup finished and sent........"
+	
+	# Clean file
+	rm -f /usr/backups/sites/$site-$stamp*
+	
+done < "$domains"
+
+rm /opt/wordpress_scripts/config/.list
+

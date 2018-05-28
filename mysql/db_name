@@ -1,0 +1,5 @@
+#! /bin/bash
+
+source /opt/wordpress_scripts/config/script.conf
+
+echo $(mysql --disable-column-names -u$admin_mysql -p$mysql_passwd dbispconfig -se "select web_database.database_name from web_database where parent_domain_id = (select web_domain.domain_id from web_domain where domain='$1')")

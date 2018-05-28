@@ -1,0 +1,110 @@
+#! /bin/bash
+
+############ Wordpress Migration Script#############
+# Version: 3.1
+# Author: Jesús Maldonado
+
+if [ "$#" -lt "3" ]; then
+	echo "ERROR: Less params than expected."
+	echo "Script usage:"
+	echo "wordpress-migration [live-domain] [staging-domain] [to-live | to-staging]"
+	exit 1
+elif [ "$#" -gt "3" ]; then
+	echo "ERROR: More params than expected."
+	echo "Script usage:"
+	echo "wordpress-migration [live-domain] [staging-domain] [to-live | to-staging]"
+	exit 1
+fi
+echo "********Migration WordPress Script********"
+
+if [ "$3" = "to-staging" ]; then
+	origin_domain=$1
+	final_domain=$2
+	origin_db=$(/opt/wordpress_scripts/mysql/db_name $1)
+	final_db=$(/opt/wordpress_scripts/mysql/db_name $2)
+	final_db_user=$(/opt/wordpress_scripts/mysql/db_user $final_db)
+	echo "Live ----------> Staging"
+elif [ "$3" = "to-live" ]; then
+	origin_domain=$2
+	final_domain=$1
+	origin_db=$(/opt/wordpress_scripts/mysql/db_name $2)
+	final_db=$(/opt/wordpress_scripts/mysql/db_name $1)
+	final_db_user=$(/opt/wordpress_scripts/mysql/db_user $final_db)
+	echo "Staging ----------> Live"
+else
+	echo "ERROR: Last param is wrong."
+	echo "Script usage"
+	echo "wordpress-migration [live-domain] [staging-domain] [to-live | to-staging]"
+	exit 1
+fi
+
+exec_time=$(date "+%d%m%Y-%H%M%S")
+
+# Making zip file of origin site
+cd /var/www/$origin_domain/web/
+/opt/wordpress_scripts/mysql/db_backup $origin_db $origin_domain $origin_domain-$exec_time.sql
+tar cfz /usr/backups/sites/$origin_domain-$exec_time.tar *
+rm -f $origin_domain-$exec_time.sql
+
+# Making zip file of final site
+/opt/wordpress_scripts/mysql/db_backup $final_db $final_domain $final_domain-$exec_time.sql
+cd /var/www/$final_domain/web/
+tar cfz /usr/backups/sites/$final_domain-$exec_time.tar *
+
+echo "Create zip ................... OK"
+
+# Drop files in new domain directory
+
+rm -rf /var/www/$final_domain/web/*
+
+echo "Clean new domain directory ...................... OK"
+
+# Copying to origin site folder
+
+cp /usr/backups/sites/$origin_domain-$exec_time.tar /var/www/$final_domain/web/
+
+echo "Copy zip to new domain ....................... OK"
+
+# Unziping origin file
+
+tar xfz $origin_domain-$exec_time.tar
+
+echo "Unzip and move files to new domain .......................... OK"
+
+owner_user=$(stat -c %U /var/www/$final_domain/web/)
+owner_group=$(stat -c %G /var/www/$final_domain/web/)
+
+# Changing owner
+
+chown -R $owner_user.$owner_group /var/www/$final_domain/web/
+
+echo "Change owner ....................... OK"
+
+################### DB section ######################
+
+# Drop of final domain DB
+
+/opt/wordpress_scripts/mysql/db_clean $final_db
+
+# Restoring backup in new domain DB
+
+/opt/wordpress_scripts/mysql/db_restore $final_db $final_domain $origin_domain-$exec_time.sql
+
+# Updating domains in DB
+
+/opt/wordpress_scripts/mysql/db_update $final_db $origin_domain $final_domain
+
+# Cleaning temp files
+rm $origin_domain-*
+
+################# wp-config section ####################
+
+new_db_name="define('DB_NAME', '$final_db');"
+new_db_user="define('DB_USER', '$final_db_user');"
+#new_db_password="define('DB_PASSWORD', '$final_db_password');"
+
+sed -i "/DB_NAME/c $new_db_name" /var/www/$final_domain/web/wp-config.php
+sed -i "/DB_USER/c $new_db_user" /var/www/$final_domain/web/wp-config.php
+#sed -i "/DB_PASSWORD/c $new_db_password" /var/www/$final_domain/web/wp-config.php
+
+echo "**** Remember update permalinks in WP-ADMIN to recreate the .heaccess file ****"
