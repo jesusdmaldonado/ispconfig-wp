@@ -1,4 +1,4 @@
-This scripts allow manage Wordpress sites at ISPConfig.
+This scripts allow manage Wordpress sites at ISPConfig...
 
 Allows manage staging/live environments, migrating data between each other.
 
