@@ -6,8 +6,8 @@ Allows manage staging/live environments, migrating data between each other.
 
 ## Install
 
-* Download scripts and deploy in /opt/wordpress_scripts.
-* Create symlinks in /usr/bin
+1. Download scripts and deploy in /opt/wordpress_scripts.
+2. Create symlinks in /usr/bin
 ```
 ln -s /opt/wordpress_scripts/wordpress-backup /usr/bin
 ln -s /opt/wordpress_scripts/wordpress-migration /usr/bin
