@@ -6,15 +6,14 @@ Allows manage staging/live environments, migrating data between each other.
 
 ## Install
 
-Download scripts and deploy in /opt/wordpress_scripts.
-
-Create symlinks in /usr/bin
-
+* Download scripts and deploy in /opt/wordpress_scripts.
+* Create symlinks in /usr/bin
+```
 ln -s /opt/wordpress_scripts/wordpress-backup /usr/bin
 ln -s /opt/wordpress_scripts/wordpress-migration /usr/bin
 ln -s /opt/wordpress_scripts/wordpress-s3-backup /usr/bin
 ln -s /opt/wordpress_scripts/wordpress-theme /usr/bin
-
+```
 After this, you can use them as global system commands.
 
 ## Configuration
