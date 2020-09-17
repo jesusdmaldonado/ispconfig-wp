@@ -1,8 +1,10 @@
-This scripts allow manage Wordpress sites at ISPConfig.
+# Script for WordPress in ISPConfig
+
+This scripts allow manage Wordpress sites hosted in ISPConfig.
 
 Allows manage staging/live environments, migrating data between each other.
 
-Install
+## Install
 
 Download scripts and deploy in /opt/wordpress_scripts.
 
@@ -15,7 +17,7 @@ ln -s /opt/wordpress_scripts/wordpress-theme /usr/bin
 
 After this, you can use them as global system commands.
 
-Configuration
+## Configuration
 
 To use S3 backup, install and setup s3cmd in your server editing 'wordpress_scripts/wordpress-s3-backup' and look for line:
 
@@ -23,23 +25,23 @@ bucket=" "
 
 Replace for your bucket
 
-wordpress-migration usage
+## wordpress-migration usage
 
 This allows to you pass info between live and staging environments, updating wp-config and DB.
 
 wordpress-migration [live-domain] [staging-domain] [to-live | to-staging]
 
-wordpress-backup usage
+## wordpress-backup usage
 
 Backup script makes and restores backups.
 
 wordpress-backup [domain] [backup|restore] | [file_name]
 
-wordpress-s3-backup usage
+## wordpress-s3-backup usage
 
 This uploads your existing backup to your s3 bucket.
 
-wordpress-theme usage
+## wordpress-theme usage
 
 This script allows to you update theme files, good for blogs.
 
