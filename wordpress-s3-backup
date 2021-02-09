@@ -2,10 +2,10 @@
 
 ############ Wordpress S3 Backup Script #############
 # Version: 1.2
-# Author: Jesús Maldonado
+# Author: JesÃºs Maldonado
 
 # Amazon S3 bucket
-bucket="isp-citriom"
+bucket="[BUCKET]"
 
 if [ $bucket = " " ]; then
 	echo "Configure your bucket before run s3 backups."
