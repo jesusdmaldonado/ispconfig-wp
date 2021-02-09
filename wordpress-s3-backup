@@ -5,7 +5,7 @@
 # Author: Jesús Maldonado
 
 # Amazon S3 bucket
-bucket="[BUCKET]"
+bucket="[S3-BUCKET]"
 
 if [ $bucket = " " ]; then
 	echo "Configure your bucket before run s3 backups."
