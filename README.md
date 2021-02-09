@@ -4,9 +4,13 @@ This scripts allow manage Wordpress sites hosted in ISPConfig.
 
 Allows manage staging/live environments, migrating data between each other.
 
+## Requisites
+
+Config your AWS account or s3 command in your server or local.
+
 ## Install
 
-1. Download scripts and deploy in /opt/wordpress_scripts.
+1. Download scripts and deploy in /opt/wordpress_scripts
 2. Create symlinks in /usr/bin
 ```
 ln -s /opt/wordpress_scripts/wordpress-backup /usr/bin
